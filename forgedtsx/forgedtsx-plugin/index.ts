@@ -1,6 +1,8 @@
 import * as ts from "typescript/lib/tsserverlibrary";
 import "./services/refactors";
+import "./services/codefixes";
 import { refactors } from "./services/refactors/refactorsProvider";
+import { codeFixes } from "./services/codefixes/codeFixProvider";
 
 function init(modules: {
   typescript: typeof import("typescript/lib/tsserverlibrary");
@@ -87,6 +89,53 @@ function init(modules: {
         actionName,
         preferences
       );
+    };
+
+    proxy.getCodeFixesAtPosition = (
+      fileName,
+      start,
+      end,
+      errorCodes,
+      formatOptions,
+      preferences
+    ) => {
+      info.project.projectService.logger.info(
+        "Here comes the augementation of the codefixes"
+      );
+      const prior = info.languageService.getCodeFixesAtPosition(
+        fileName,
+        start,
+        end,
+        errorCodes,
+        formatOptions,
+        preferences
+      );
+
+      const context = {
+        sourceFile: info.languageService.getProgram()!.getSourceFile(fileName)!,
+        program: info.languageService.getProgram()!,
+        startPosition: start,
+        endPosition: end,
+        preferences: preferences || {},
+        span: { start, length: end - start },
+      };
+
+      const codeFixResults: ts.CodeFixAction[] = [];
+      info.project.projectService.logger.info(
+        `checking codefixes length ${codeFixes.length}`
+      );
+
+      for (const codeFix of codeFixes) {
+        if (codeFix.errorCodes.some((code) => errorCodes.includes(code))) {
+          const actions = codeFix.getCodeActions(context);
+          if (actions) {
+            info.project.projectService.logger.info("pushing codefix actions");
+            codeFixResults.push(...actions);
+          }
+        }
+      }
+
+      return [...prior, ...codeFixResults];
     };
 
     return proxy;

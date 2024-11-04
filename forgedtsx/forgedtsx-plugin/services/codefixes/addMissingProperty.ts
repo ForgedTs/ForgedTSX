@@ -1,5 +1,5 @@
 import {
-    FileTextChanges,
+  FileTextChanges,
   findAncestor,
   isJsxAttribute,
   isJsxOpeningLikeElement,
@@ -22,20 +22,24 @@ import {
   type TypeChecker,
   type TypeLiteralNode,
   type TypeNode,
+  createPrinter,
+  createTextSpanFromBounds,
+  EmitHint,
 } from "typescript/lib/tsserverlibrary";
 import { registerCodeFix } from "./codeFixProvider";
+import { createTextChange, getNodeAtPosition } from "../utils";
 const fixId = "addMissingProperty";
+
 const errorCodes = [
-  // Diagnostics.Property_0_does_not_exist_on_type_1.code,
-  // Diagnostics.Property_0_does_not_exist_on_type_1_Did_you_mean_2.code,
-  // Diagnostics.Type_0_is_not_assignable_to_type_1.code,
-  2339, 2322,
+  2339, // Diagnostics.Property_0_does_not_exist_on_type_1.code,
+  2322, // Diagnostics.Type_0_is_not_assignable_to_type_1.code,
 ];
+
 registerCodeFix({
   fixIds: [fixId],
   errorCodes,
   getCodeActions(context: any): CodeFixAction[] | undefined {
-    const { sourceFile, span } = context;
+    const { sourceFile, span, program } = context;
 
     // Find the token at error position
     const token = getNodeAtPosition(sourceFile, span.start, true);
@@ -62,23 +66,19 @@ registerCodeFix({
     const propName = attribute.name.getText();
     const componentName = jsxElement.tagName.getText();
 
-    const changes = ChangeTracker.with(context, (tracker) => {
-      // Call the new helper function to add the missing property
-      addMissingPropertyToProps(
-        tracker,
-        program,
-        sourceFile,
-        jsxElement,
-        propName
-      );
-    });
+    const changes = addMissingPropertyToProps(
+      sourceFile,
+      program,
+      jsxElement,
+      propName
+    );
 
     return [
       {
         fixId,
         fixName: `Add missing property '${propName}'`,
         description: `Add '${propName}' to ${componentName} props`,
-        changes: [],
+        changes,
       },
     ];
   },
@@ -123,86 +123,138 @@ function createPropertySignature(propName: string, typeNode: TypeNode) {
   );
 }
 
-// Update the addMissingPropertyToProps function to include type inference
-function addMissingPropertyToProps(
-  tracker: textChanges.ChangeTracker,
-  program: Program,
+function getTextChangesForNode(
   sourceFile: SourceFile,
+  node: Node,
+  newNode: Node
+): FileTextChanges {
+  const printer = createPrinter({ removeComments: false });
+  const newText = printer.printNode(EmitHint.Unspecified, newNode, sourceFile);
+
+  return {
+    fileName: sourceFile.fileName,
+    textChanges: [
+      createTextChange(
+        createTextSpanFromBounds(node.getStart(), node.getEnd()),
+        newText
+      ),
+    ],
+  };
+}
+
+function insertNodeBefore(
+  sourceFile: SourceFile,
+  before: Node,
+  newNode: Node,
+  addNewLine = false
+): FileTextChanges {
+  const printer = createPrinter({ removeComments: false });
+  const newText =
+    printer.printNode(EmitHint.Unspecified, newNode, sourceFile) +
+    (addNewLine ? "\n\n" : "");
+
+  return {
+    fileName: sourceFile.fileName,
+    textChanges: [
+      createTextChange(
+        createTextSpanFromBounds(before.getStart(), before.getStart()),
+        newText
+      ),
+    ],
+  };
+}
+
+function addPropertyToType(
+  sourceFile: SourceFile,
+  typeLiteral: TypeLiteralNode,
+  propName: string,
+  typeNode: TypeNode
+): FileTextChanges {
+  const members = typeLiteral.members;
+  const insertPos = members.length
+    ? members[members.length - 1].end
+    : typeLiteral.members.pos;
+
+  // Check if the last character is already a semicolon
+  const lastChar = sourceFile.text[insertPos - 1];
+  const needsSemicolon = lastChar !== ";";
+
+  const prefix = members.length ? "\n  " : "  ";
+  const printer = createPrinter({ removeComments: false });
+  const propertySignature = createPropertySignature(propName, typeNode);
+  const newText =
+    prefix +
+    printer.printNode(EmitHint.Unspecified, propertySignature, sourceFile) +
+    (needsSemicolon ? ";" : "");
+
+  return {
+    fileName: sourceFile.fileName,
+    textChanges: [
+      createTextChange(createTextSpanFromBounds(insertPos, insertPos), newText),
+    ],
+  };
+}
+
+function addMissingPropertyToProps(
+  sourceFile: SourceFile,
+  program: Program,
   jsxElement: JsxOpeningLikeElement,
   propName: string
-) {
+): FileTextChanges[] {
+  const changes: FileTextChanges[] = [];
   const checker = program.getTypeChecker();
   const componentSymbol = checker.getSymbolAtLocation(jsxElement.tagName);
   if (!componentSymbol?.declarations?.length) {
-    return;
+    return changes;
   }
 
   const componentDecl = componentSymbol.declarations[0];
   if (!isFunctionDeclaration(componentDecl)) {
-    return;
+    return changes;
   }
 
-  // Find the attribute to infer its type
   const attribute = jsxElement.attributes.properties.find(
     (p): p is JsxAttribute => isJsxAttribute(p) && p.name.getText() === propName
   );
   if (!attribute) {
-    return;
+    return changes;
   }
 
   const propertyType = inferPropertyType(attribute, checker);
 
-  // Try to add to existing props type first with inferred type
-  if (
-    tryAddToExistingPropsType(
-      tracker,
-      sourceFile,
-      checker,
-      componentDecl,
-      propName,
-      propertyType
-    )
-  ) {
-    return;
+  const propsTypeDecl = getExistingPropsTypeDeclaration(checker, componentDecl);
+  if (propsTypeDecl) {
+    changes.push(
+      addPropertyToType(
+        sourceFile,
+        propsTypeDecl.type as TypeLiteralNode,
+        propName,
+        propertyType
+      )
+    );
+    return changes;
   }
 
   // If no existing props type, create new one with inferred type
-  createNewPropsTypeAndUpdateComponent(
-    tracker,
-    sourceFile,
-    componentDecl,
-    componentSymbol.name,
+  const propsTypeName = `${componentSymbol.name}Props`;
+  const propsType = createPropsTypeDeclaration(
+    propsTypeName,
     propName,
     propertyType
   );
-}
+  const updatedComponent = createUpdatedComponent(
+    componentDecl,
+    propsTypeName,
+    propName
+  );
 
-function tryAddToExistingPropsType(
-  tracker: textChanges.ChangeTracker,
-  sourceFile: SourceFile,
-  checker: TypeChecker,
-  componentDecl: FunctionDeclaration,
-  propName: string,
-  typeNode: TypeNode
-): boolean {
-  const propsTypeDecl = getExistingPropsTypeDeclaration(checker, componentDecl);
-  if (!propsTypeDecl) {
-    return false;
-  }
+  // Insert type and update component
+  changes.push(
+    insertNodeBefore(sourceFile, componentDecl, propsType, /*addNewLine*/ true),
+    getTextChangesForNode(sourceFile, componentDecl, updatedComponent)
+  );
 
-  const typeLiteral = propsTypeDecl.type as TypeLiteralNode;
-  const members = typeLiteral.members;
-  const insertPosition = getInsertPositionInType(typeLiteral);
-  const hasExistingMembers = members.length > 0;
-
-  const newProperty = createPropertySignature(propName, typeNode);
-
-  tracker.insertNodeAt(sourceFile, insertPosition, newProperty, {
-    prefix: hasExistingMembers ? "\n  " : "  ",
-    suffix: ";",
-  });
-
-  return true;
+  return changes;
 }
 
 function getExistingPropsTypeDeclaration(
@@ -226,36 +278,6 @@ function getExistingPropsTypeDeclaration(
     isTypeLiteralNode(propsTypeDecl.type)
     ? propsTypeDecl
     : undefined;
-}
-
-function createNewPropsTypeAndUpdateComponent(
-  tracker: textChanges.ChangeTracker,
-  sourceFile: SourceFile,
-  componentDecl: FunctionDeclaration,
-  componentName: string,
-  propName: string,
-  typeNode: TypeNode
-) {
-  const propsTypeName = `${componentName}Props`;
-  const propsType = createPropsTypeDeclaration(
-    propsTypeName,
-    propName,
-    typeNode
-  );
-  const updatedComponent = createUpdatedComponent(
-    componentDecl,
-    propsTypeName,
-    propName
-  );
-
-  // Insert type and update component
-  tracker.insertNodeBefore(
-    sourceFile,
-    componentDecl,
-    propsType,
-    /*blankLineBetween*/ true
-  );
-  tracker.replaceNode(sourceFile, componentDecl, updatedComponent);
 }
 
 function createPropsTypeDeclaration(
@@ -304,30 +326,4 @@ function createPropsParameter(propsTypeName: string, propName: string) {
     factory.createTypeReferenceNode(propsTypeName, /*typeArguments*/ undefined),
     /*initializer*/ undefined
   );
-}
-
-function getInsertPositionInType(typeLiteral: TypeLiteralNode) {
-  const members = typeLiteral.members;
-  return members.length
-    ? members[members.length - 1].end
-    : typeLiteral.members.pos;
-}
-
-function getNodeAtPosition(
-  sourceFile: SourceFile,
-  startPosition: number,
-  includeJSDoc: boolean
-): Node | undefined {
-  function find(node: Node): Node | undefined {
-    if (node.getStart() <= startPosition && node.getEnd() >= startPosition) {
-      return node.forEachChild(find) || node;
-    }
-    return undefined;
-  }
-
-  const node = find(sourceFile);
-  if (!includeJSDoc && node && node.kind === SyntaxKind.JSDocComment) {
-    return undefined;
-  }
-  return node;
 }
