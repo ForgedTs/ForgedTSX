@@ -1,51 +1,47 @@
 # forgedtsx README
 
-This is the README for your extension "forgedtsx". After writing up a brief description, we recommend including the following sections.
+ForgedTSX is a Visual Studio Code extension designed to enhance the development experience for TypeScript and JSX files. It provides a suite of tools and features to improve productivity and code quality.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Syntax Highlighting**: Enhanced syntax highlighting for TypeScript and JSX.
+- **Code Snippets**: Useful code snippets for common TypeScript and JSX patterns.
+- **Linting and Formatting**: Integrated linting and formatting tools to keep your code clean and consistent.
+- **IntelliSense**: Improved IntelliSense for TypeScript and JSX, providing better code completion and navigation.
+- **Refactoring Tools**: Tools to easily refactor your TypeScript and JSX code.
 
-For example if there is an image subfolder under your extension project workspace:
+\!\[Syntax Highlighting\]\(images/syntax-highlighting.png\)
+\!\[Code Snippets\]\(images/code-snippets.png\)
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+> Tip: Utilize animations to demonstrate the features of your extension! Short, focused animations are easy to follow and effective.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code v1.50.0 or higher
+- Node.js v12 or higher
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `forgedtsx.enable`: Enable/disable this extension.
+* `forgedtsx.lintOnSave`: Enable/disable linting on save.
+* `forgedtsx.formatOnSave`: Enable/disable formatting on save.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Linting may not work correctly with certain TypeScript configurations.
+- Some code snippets may not trigger IntelliSense correctly.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
+Initial release of ForgedTSX with basic features including syntax highlighting, code snippets, linting, and formatting.
 
 ### 1.1.0
 
-Added features X, Y, and Z.
+Added IntelliSense improvements and refactoring tools.
 
 ---
 
