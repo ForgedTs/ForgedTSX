@@ -58,8 +58,5 @@
   },
   "dependencies": {
     "forgedtsx-plugin": "file:forgedtsx-plugin"
-  },
-  "files": [
-    "dist"
-  ]
+  }
 }
