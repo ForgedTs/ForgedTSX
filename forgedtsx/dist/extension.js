@@ -5,9 +5,6 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -29,41 +26,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// forgedtsx-plugin/dist/index.js
-var require_dist = __commonJS({
-  "forgedtsx-plugin/dist/index.js"(exports2, module2) {
-    "use strict";
-    function init(modules) {
-      function create(info) {
-        const whatToRemove = info.config.remove || ["caller"];
-        info.project.projectService.logger.info("I'm getting set up now! Check the log for this message.");
-        const proxy = /* @__PURE__ */ Object.create(null);
-        for (let k of Object.keys(info.languageService)) {
-          const x = info.languageService[k];
-          proxy[k] = (...args) => x.apply(info.languageService, args);
-        }
-        proxy.getCompletionsAtPosition = (fileName, position, options) => {
-          info.project.projectService.logger.info(`Info from plugin`);
-          const prior = info.languageService.getCompletionsAtPosition(fileName, position, options);
-          if (!prior) {
-            return;
-          }
-          const oldLength = prior.entries.length;
-          prior.entries = prior.entries.filter((e) => whatToRemove.indexOf(e.name) < 0);
-          if (oldLength !== prior.entries.length) {
-            const entriesRemoved = oldLength - prior.entries.length;
-            info.project.projectService.logger.info(`Removed ${entriesRemoved} entries from the completion list`);
-          }
-          return prior;
-        };
-        return proxy;
-      }
-      return { create };
-    }
-    module2.exports = init;
-  }
-});
 
 // src/extension.ts
 var extension_exports = {};
@@ -96,7 +58,6 @@ async function addTsServerPlugin() {
   }
   try {
     vscode.window.showInformationMessage("We are activating the plugin!");
-    const plugin = await Promise.resolve().then(() => __toESM(require_dist()));
     api.configurePlugin("forgedtsx-plugin", {});
   } catch (e) {
     console.error(e);

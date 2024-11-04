@@ -8,11 +8,6 @@ function init(modules: {
   typescript: typeof import("typescript/lib/tsserverlibrary");
 }) {
   function create(info: ts.server.PluginCreateInfo) {
-    // Diagnostic logging
-    info.project.projectService.logger.info(
-      "New refactors are getting registered"
-    );
-
     // Set up decorator object
     const proxy: ts.LanguageService = Object.create(null);
     for (let k of Object.keys(info.languageService) as Array<
@@ -99,9 +94,6 @@ function init(modules: {
       formatOptions,
       preferences
     ) => {
-      info.project.projectService.logger.info(
-        "Here comes the augementation of the codefixes"
-      );
       const prior = info.languageService.getCodeFixesAtPosition(
         fileName,
         start,
@@ -121,15 +113,11 @@ function init(modules: {
       };
 
       const codeFixResults: ts.CodeFixAction[] = [];
-      info.project.projectService.logger.info(
-        `checking codefixes length ${codeFixes.length}`
-      );
 
       for (const codeFix of codeFixes) {
         if (codeFix.errorCodes.some((code) => errorCodes.includes(code))) {
           const actions = codeFix.getCodeActions(context);
           if (actions) {
-            info.project.projectService.logger.info("pushing codefix actions");
             codeFixResults.push(...actions);
           }
         }
