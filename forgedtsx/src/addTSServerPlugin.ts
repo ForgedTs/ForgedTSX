@@ -29,8 +29,6 @@ export async function addTsServerPlugin() {
 
   try {
     vscode.window.showInformationMessage("We are activating the plugin!");
-    // @ts-expect-error
-    const plugin = await import("forgedtsx-plugin");
     api.configurePlugin("forgedtsx-plugin", {});
   } catch (e) {
     console.error(e);
