@@ -1,6 +1,4 @@
-import type {
-  CodeFixAction,
-} from "typescript/lib/tsserverlibrary";
+import type { CodeFixAction } from "typescript";
 
 export const codeFixes: CodeFixRegistration[] = [];
 

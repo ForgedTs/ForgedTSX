@@ -1,8 +1,8 @@
-import * as ts from "typescript/lib/tsserverlibrary";
 import "./services/refactors";
 import "./services/codefixes";
 import { refactors } from "./services/refactors/refactorsProvider";
 import { codeFixes } from "./services/codefixes/codeFixProvider";
+import type ts from "typescript";
 
 function init(modules: {
   typescript: typeof import("typescript/lib/tsserverlibrary");

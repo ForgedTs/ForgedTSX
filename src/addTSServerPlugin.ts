@@ -28,7 +28,6 @@ export async function addTsServerPlugin() {
   }
 
   try {
-    vscode.window.showInformationMessage("We are activating the plugin!");
     api.configurePlugin("forgedtsx-plugin", {});
   } catch (e) {
     console.error(e);

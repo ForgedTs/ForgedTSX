@@ -15,16 +15,10 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "forgedtsx.helloWorld",
-        "title": "Hello World"
-      }
-    ],
     "typescriptServerPlugins": [
       {
         "name": "forgedtsx-plugin",
-        "path": "./plugin",
+        "path": "./dist/forgedtsx-plugin",
         "enableForWorkspaceTypeScriptVersions": true
       }
     ]
@@ -41,7 +35,8 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "create-package": "vsce package --allow-missing-repository  --dependencies --follow-symlinks"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.9",

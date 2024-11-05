@@ -25,7 +25,7 @@ import {
   createPrinter,
   createTextSpanFromBounds,
   EmitHint,
-} from "typescript/lib/tsserverlibrary";
+} from "typescript";
 import { registerCodeFix } from "./codeFixProvider";
 import { createTextChange, getNodeAtPosition } from "../utils";
 const fixId = "addMissingProperty";

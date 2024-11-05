@@ -4,7 +4,7 @@ import type {
   ApplicableRefactorInfo,
   InteractiveRefactorArguments,
   RefactorEditInfo,
-} from "typescript/lib/tsserverlibrary";
+} from "typescript";
 import type { RefactorContext } from "./types";
 
 export interface Refactor {

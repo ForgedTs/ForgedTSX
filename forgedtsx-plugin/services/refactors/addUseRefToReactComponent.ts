@@ -11,10 +11,11 @@ import {
   type RefactorEditInfo,
   type SourceFile,
   type TypeChecker,
+  Node,
+  SyntaxKind,
 } from "typescript";
 import { registerRefactor } from "./refactorsProvider";
 import type { RefactorContext } from "./types";
-import { Node, SyntaxKind } from "typescript";
 
 const emptyArray: readonly any[] = [];
 const refactorName = "Add React useRef to Component";

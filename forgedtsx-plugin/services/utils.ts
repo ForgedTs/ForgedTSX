@@ -4,7 +4,7 @@ import {
   SyntaxKind,
   type TextChange,
   type TextSpan,
-} from "typescript/lib/tsserverlibrary";
+} from "typescript";
 
 export function getNodeAtPosition(
   sourceFile: SourceFile,
