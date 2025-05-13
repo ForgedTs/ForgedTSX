@@ -8,6 +8,7 @@
     "rootDir": ".",
     "strict": true /* enable all strict type-checking options */,
     "baseUrl": ".",
+    "esModuleInterop": true,
     "paths": {
       "*": ["*", "plugin/*"]
     }

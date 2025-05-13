@@ -24,9 +24,9 @@ ForgedTSX is a Visual Studio Code extension designed to enhance the development 
 
 This extension contributes the following settings:
 
-* `forgedtsx.enable`: Enable/disable this extension.
-* `forgedtsx.lintOnSave`: Enable/disable linting on save.
-* `forgedtsx.formatOnSave`: Enable/disable formatting on save.
+- `forgedtsx.enable`: Enable/disable this extension.
+- `forgedtsx.lintOnSave`: Enable/disable linting on save.
+- `forgedtsx.formatOnSave`: Enable/disable formatting on save.
 
 ## Known Issues
 
@@ -49,19 +49,27 @@ Added IntelliSense improvements and refactoring tools.
 
 Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+- [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
 
 ## Working with Markdown
 
 You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+- Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
+- Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
+- Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
 
 ## For more information
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
+- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
 **Enjoy!**
+
+## Cool thing for future
+
+- Add support for event handlers refactor
+- React outline with just a component outline
+  - Add support for context what context does the component have access to.
+  - Add support for react-query like context so user get some sense of what query-keys are in place.
+  - Basically bring the context to your component  
