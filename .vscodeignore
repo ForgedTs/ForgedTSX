@@ -1,8 +1,6 @@
 .vscode/**
 .vscode-test/**
 out/**
-node_modules/**
-!node_modules/forgedtsx-plugin/**
 src/**
 .gitignore
 .yarnrc
@@ -16,4 +14,4 @@ vsc-extension-quickstart.md
 # Remove this line to include the compiled plugin
 # forgedtsx-plugin/**
 # But keep excluding source files in the plugin
-forgedtsx-plugin/**
+test-react-app/**
